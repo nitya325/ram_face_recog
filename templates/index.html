@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Based Face Recognition</title>
+    <style>
+        /* Base styles for the entire page */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            color: #fff; /* White text for a better contrast */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1A2980, #26D0CE); /* The main background gradient */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* The floating background bubbles */
+        .background-bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* This keeps the bubbles from causing a scrollbar themselves */
+            z-index: 1; /* Behind the main content */
+        }
+        .background-bubbles li {
+            position: absolute;
+            display: block;
+            list-style: none;
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            animation: animate 25s linear infinite;
+            bottom: -150px;
+        }
+        .background-bubbles li:nth-child(1) { left: 25%; width: 80px; height: 80px; animation-delay: 0s; }
+        .background-bubbles li:nth-child(2) { left: 10%; width: 20px; height: 20px; animation-delay: 2s; animation-duration: 12s; }
+        .background-bubbles li:nth-child(3) { left: 70%; width: 20px; height: 20px; animation-delay: 4s; }
+        .background-bubbles li:nth-child(4) { left: 40%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .background-bubbles li:nth-child(5) { left: 65%; width: 20px; height: 20px; animation-delay: 0s; }
+        .background-bubbles li:nth-child(6) { left: 75%; width: 110px; height: 110px; animation-delay: 3s; }
+        .background-bubbles li:nth-child(7) { left: 35%; width: 150px; height: 150px; animation-delay: 7s; }
+        .background-bubbles li:nth-child(8) { left: 50%; width: 25px; height: 25px; animation-delay: 15s; animation-duration: 45s; }
+        .background-bubbles li:nth-child(9) { left: 20%; width: 15px; height: 15px; animation-delay: 2s; animation-duration: 35s; }
+        .background-bubbles li:nth-child(10) { left: 85%; width: 150px; height: 150px; animation-delay: 0s; animation-duration: 11s; }
+        @keyframes animate {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; border-radius: 0; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; border-radius: 50%; }
+        }
+
+        /* Glassmorphism card container for content */
+        .glass-container {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.15); /* Translucent background */
+            backdrop-filter: blur(10px); /* The frosted glass effect */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 40px;
+        }
+
+        /* Glassmorphism elements inside the container */
+        h1 { color: white; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        #video-container {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        #video-feed {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .bounding-box {
+            position: absolute;
+            border: 3px solid #6c5ce7;
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.8);
+            pointer-events: none;
+            transition: all 0.1s ease-in-out;
+            box-sizing: border-box;
+        }
+        .name-tag {
+            position: absolute;
+            background-color: #6c5ce7;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            transform: translateY(-100%);
+            transition: all 0.1s ease-in-out;
+        }
+        .controls { margin-top: 20px; }
+        .button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white; /* Ensure text is white */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 28px; /* Slightly more padding for a larger feel */
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            font-weight: bold;
+        }
+        .button:hover { 
+            background: rgba(255, 255, 255, 0.3); 
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Subtle white glow on hover */
+        }
+
+        /* Specific styling for the START button to make it stand out */
+        #start-btn.button {
+            background: linear-gradient(90deg, #6c5ce7, #00cec9); /* A more vibrant gradient for the button itself */
+            border: none; /* No transparent border needed with a solid gradient background */
+            box-shadow: 0 0 25px rgba(108, 92, 231, 0.6), 0 0 40px rgba(0, 206, 201, 0.6); /* Stronger, dual-color glow */
+            padding: 15px 35px; /* Even more padding to make it larger */
+            font-size: 1.3em; /* Larger font size for prominence */
+            color: white; /* Ensure text is white */
+        }
+        #start-btn.button:hover {
+            transform: scale(1.08); /* More pronounced hover effect */
+            box-shadow: 0 0 35px rgba(108, 92, 231, 0.8), 0 0 50px rgba(0, 206, 201, 0.8); /* Even stronger glow on hover */
+        }
+
+        /* The glowing recognition display */
+        #recognition-display {
+            margin-top: 20px;
+            padding: 18px 35px; /* More padding */
+            border-radius: 12px; /* Slightly larger border-radius */
+            color: white;
+            font-weight: bold;
+            font-size: 1.9em; /* Even larger font size */
+            background: rgba(255, 255, 255, 0.15); /* Slightly less transparent */
+            backdrop-filter: blur(8px); /* Slightly more blur */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Stronger border */
+            box-shadow: 0 0 30px rgba(44, 208, 206, 0.7), 0 0 50px rgba(26, 41, 128, 0.7); /* Much stronger glow */
+            text-shadow: 0 0 5px rgba(255,255,255,0.7); /* Subtle text glow for readability */
+            /* Add new transition effect */
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        /* NEW: Class for the active state of the recognition display */
+        .active-display {
+            background: linear-gradient(90deg, #6c5ce7, #00cec9); /* Match the START button's gradient */
+            box-shadow: 0 0 25px rgba(108, 92, 231, 0.6), 0 0 40px rgba(0, 206, 201, 0.6);
+            color: white;
+            font-size: 1.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-container">
+        <h1>Real-Time Face Recognition</h1>
+        <div id="video-container">
+            <video id="video-feed" width="640" height="480" autoplay playsinline></video>
+        </div>
+        <div class="controls">
+            <button id="start-btn" class="button">Start Recognition</button> <button id="stop-btn" class="button" style="display:none;">Stop Recognition</button>
+        </div>
+        <div id="recognition-display">
+            Waiting for recognition...
+        </div>
+    </div>
+    
+    <ul class="background-bubbles">
+        <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
+    </ul>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const video = document.getElementById('video-feed');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const videoContainer = document.getElementById('video-container');
+        const recognitionDisplay = document.getElementById('recognition-display');
+
+        let recognitionIntervalId;
+        let stream;
+
+        function startRecognition() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                    video.addEventListener('loadeddata', () => {
+                        video.play();
+                        recognitionDisplay.innerText = "Webcam active. Starting recognition...";
+                        recognitionDisplay.classList.add('active-display'); // Add the new class
+                        startProcessing();
+                    });
+                    startBtn.style.display = 'none';
+                    stopBtn.style.display = 'block';
+                })
+                .catch(err => {
+                    console.error("Error accessing the webcam: ", err);
+                    recognitionDisplay.innerText = "Error: Could not access webcam. Please check permissions.";
+                });
+        }
+
+        function stopRecognition() {
+            clearInterval(recognitionIntervalId);
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            video.srcObject = null;
+            startBtn.style.display = 'block';
+            stopBtn.style.display = 'none';
+            recognitionDisplay.innerText = "Recognition stopped.";
+            recognitionDisplay.classList.remove('active-display'); // Remove the class
+            document.querySelectorAll('.bounding-box, .name-tag').forEach(el => el.remove());
+        }
+
+        function startProcessing() {
+            const recognitionInterval = 200;
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            recognitionIntervalId = setInterval(() => {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg');
+
+                fetch('/recognize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_data: imageData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    updateUI(data);
+                })
+                .catch(error => {
+                    console.error('Error during recognition:', error);
+                });
+            }, recognitionInterval);
+        }
+
+        function updateUI(data) {
+            document.querySelectorAll('.bounding-box, .name-tag').forEach(el => el.remove());
+            
+            if (data.faces && data.faces.length > 0) {
+                const main_person = data.faces[0];
+                recognitionDisplay.innerText = `${main_person.name} (${main_person.confidence.toFixed(2)})`;
+
+                data.faces.forEach(face => {
+                    const { name, confidence, face_location } = face;
+                    const { x, y, w, h } = face_location;
+                    
+                    const bbox = document.createElement('div');
+                    bbox.className = 'bounding-box';
+                    bbox.style.left = `${x}px`;
+                    bbox.style.top = `${y}px`;
+                    bbox.style.width = `${w}px`;
+                    bbox.style.height = `${h}px`;
+                    videoContainer.appendChild(bbox);
+
+                    const nameTag = document.createElement('div');
+                    nameTag.className = 'name-tag';
+                    nameTag.innerText = name === 'Unknown' ? name : `${name} (${confidence.toFixed(2)})`;
+                    nameTag.style.left = `${x}px`;
+                    nameTag.style.top = `${y - 25}px`;
+                    videoContainer.appendChild(nameTag);
+                });
+            } else {
+                recognitionDisplay.innerText = "No faces detected.";
+            }
+        }
+        
+        startBtn.addEventListener('click', startRecognition);
+        stopBtn.addEventListener('click', stopRecognition);
+    </script>
+</body>
+</html>

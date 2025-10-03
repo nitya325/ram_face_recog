@@ -1,0 +1,7 @@
+venv/
+dataset/
+trainer
+label_map
+train_modelkaggle
+__pycache__/
+*.pyc
