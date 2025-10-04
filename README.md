@@ -51,7 +51,7 @@ Follow these steps to set up the environment and install all necessary libraries
 
 ---
 
-## 🏃 Usage
+## Usage
 
 The application requires a model to be trained before recognition can occur.
 
