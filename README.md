@@ -51,7 +51,7 @@ Follow these steps to set up the environment and install all necessary libraries
 
 ---
 
-## Usage
+## 🏃 Usage
 
 The application requires a model to be trained before recognition can occur.
 
@@ -69,25 +69,41 @@ dataset/
 ├── 001.jpg
 └── 002.jpg
 
+***Note:*** *The `dataset` folder is ignored by Git and must be created locally.*
+
 ### Step 2: Train the Model
 
 Run the training script to generate the necessary recognition files (`trainer.yml` and `label_map.json`).
 
 ```bash
 python train_model.py
+```
 
 Step 3A: Run the Web App (Flask)
 Start the Flask application to access the recognition via a browser.
 
-Bash
-
+```bash
 python app.py
-(The application will be accessible at http://127.0.0.1:5000)
+```
+Access the app at http://127.0.0.1:5000 in your web browser.
 
 Step 3B: Run the Desktop Webcam App
 Run the standalone script for a quick desktop-based recognition using a dedicated OpenCV window.
 
-Bash
+```bash
 
 python recognize_webcam1.py
-# Press 'q' to exit the application.
+```
+
+(Press 'q' on your keyboard to exit the application.)
+
+### Next Steps:
+
+1.  **Edit `README.md`:** Open the `README.md` file in your project folder (`D:\ram_face_recog`) and replace the old "Usage" section with the revised content above.
+2.  **Save** the file.
+3.  **Push the update** to GitHub:
+    ```bash
+    git add README.md
+    git commit -m "Refactor README usage section for clarity"
+    git push
+    ```
