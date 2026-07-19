@@ -5,8 +5,6 @@ A real-time face recognition app built with **Python, OpenCV (LBPH), and Flask**
 <img width="922" height="867" alt="Screenshot 2026-07-19 172532" src="https://github.com/user-attachments/assets/dd828565-1a3b-49c2-9cdd-4a58bb7f6861" />
 
 
-**Live demo:** `<add your deployed URL here once live>`
-
 ---
 
 ## How it works
