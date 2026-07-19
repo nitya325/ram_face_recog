@@ -2,9 +2,6 @@
 
 A real-time face recognition app built with **Python, OpenCV (LBPH), and Flask**. It supports two usage modes: a **browser-based web app** (webcam capture happens client-side, inference happens server-side — deployable to the cloud) and a **local desktop script** (runs an OpenCV window directly against your machine's webcam).
 
-<img width="922" height="867" alt="Screenshot 2026-07-19 172532" src="https://github.com/user-attachments/assets/dd828565-1a3b-49c2-9cdd-4a58bb7f6861" />
-
-
 ---
 
 ## How it works
@@ -83,6 +80,8 @@ pip install opencv-contrib-python
 
 (Only one of the two `opencv-contrib-python*` variants can be installed at a time — the desktop script is a local dev convenience, not part of the deployed app, so this is a one-line local swap, not something that needs to go in `requirements.txt`.)
 
+<img width="922" height="867" alt="Screenshot 2026-07-19 172532" src="https://github.com/user-attachments/assets/dd828565-1a3b-49c2-9cdd-4a58bb7f6861" />
+
 ### Train the model
 
 Structure your dataset as:
@@ -121,12 +120,6 @@ Press `q` to quit.
 
 ---
 
-## Deployment
-
-See the deployment steps below — the short version: this repo is already deployment-ready (`Procfile`, `requirements.txt`, `PORT`/`FLASK_DEBUG` env-var support, headless OpenCV). Push to GitHub, connect the repo on Render (or Railway/Fly.io), and it builds and serves automatically. The camera never touches the server — it stays in the visitor's browser the whole time.
-
----
-
 ## Limitations
 
 - **LBPH is a classical (non-deep-learning) method.** It's fast and lightweight, but noticeably less robust than deep embeddings (e.g., FaceNet/ArcFace) to pose variation, lighting changes, occlusion, and aging — see the study guide for a full trade-off comparison.
@@ -139,4 +132,4 @@ See the deployment steps below — the short version: this repo is already deplo
 
 ## Tech stack
 
-Python · OpenCV (Haar Cascade + LBPH) · Flask · NumPy · Pillow · vanilla JS (`getUserMedia`, `Canvas`, `fetch`) · gunicorn![Uploading Screenshot 2026-07-19 172532.png…]()
+Python · OpenCV (Haar Cascade + LBPH) · Flask · NumPy · Pillow · vanilla JS (`getUserMedia`, `Canvas`, `fetch`) · gunicorn
