@@ -1,69 +1,126 @@
-import cv2
-import numpy as np
+
+tally · current session
+38%
+≈62 sonnet msgs
+resets in 4h 38m
+weekly · all models
+2% · Wed 5:29 PM
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Recognize webcam1 · PY
+"""
+Desktop-only real-time face recognition via a local webcam window.
+ 
+This script requires a physical camera and a display (cv2.imshow opens a
+native GUI window) — it is NOT deployable to a cloud server. For a
+browser/cloud-friendly version of this same functionality, see app.py +
+templates/index.html, which streams frames from the browser's webcam via
+getUserMedia instead of opening a device handle directly.
+"""
+import os
+import sys
 import json
-
-# Load the trained face recognizer and the Haar Cascade face detector
+ 
+import cv2
+ 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TRAINER_PATH = os.path.join(BASE_DIR, 'trainer.yml')
+LABEL_MAP_PATH = os.path.join(BASE_DIR, 'label_map.json')
+ 
+# Kept identical to app.py's threshold so behavior matches between the two
+# entry points. LBPH confidence is a distance: lower = better match.
+CONFIDENCE_THRESHOLD = 70.0
+MIN_FACE_SIZE = (60, 60)
+ 
 face_recognizer = cv2.face.LBPHFaceRecognizer_create()
-face_recognizer.read('trainer.yml')
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-# Load the label map
-with open('label_map.json', 'r') as f:
-    label_map = json.load(f)
-
-# Invert the label map for easy lookup (from ID to name)
-reverse_label_map = {int(v): k for k, v in label_map.items()}
-
-# Access the webcam (0 is typically the default webcam)
+ 
+try:
+    face_recognizer.read(TRAINER_PATH)
+except cv2.error:
+    print(f"Error: could not load '{TRAINER_PATH}'. Run train_model.py first.")
+    sys.exit(1)
+ 
+try:
+    with open(LABEL_MAP_PATH, 'r') as f:
+        reverse_label_map = {int(v): k for k, v in json.load(f).items()}
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    print(f"Error: could not load '{LABEL_MAP_PATH}': {e}")
+    sys.exit(1)
+ 
 cap = cv2.VideoCapture(0)
-
-# Check if the webcam is opened correctly
 if not cap.isOpened():
     print("Error: Could not open webcam.")
-    exit()
-
+    sys.exit(1)
+ 
 print("Starting real-time face recognition... Press 'q' to exit.")
-
+ 
 while True:
-    # Read a frame from the webcam
     ret, frame = cap.read()
     if not ret:
+        print("Warning: failed to read a frame from the webcam.")
         break
-
-    # Convert the frame to grayscale
+ 
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    # Detect faces in the grayscale frame
-    faces = face_cascade.detectMultiScale(gray_frame, 1.3, 5)
-
+    faces = face_cascade.detectMultiScale(
+        gray_frame, scaleFactor=1.3, minNeighbors=5, minSize=MIN_FACE_SIZE
+    )
+ 
     for (x, y, w, h) in faces:
-        # Draw a rectangle around the detected face
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        # Extract the face region for recognition
         face_region = gray_frame[y:y + h, x:x + w]
-
-        # Predict the person's ID and confidence level
-        person_id, confidence = face_recognizer.predict(face_region)
-
-        # Look up the name from the label map
-        person_name = reverse_label_map.get(person_id, "Unknown")
-
-        # Display the name and confidence on the frame
-        if confidence < 100:  # A lower confidence score means a better match
-            text = f"{person_name} (Confidence: {round(confidence, 2)})"
+ 
+        try:
+            person_id, confidence = face_recognizer.predict(face_region)
+        except cv2.error:
+            continue
+ 
+        if confidence < CONFIDENCE_THRESHOLD:
+            name = reverse_label_map.get(person_id, "Unknown")
+            text = f"{name} (Confidence: {round(confidence, 2)})"
         else:
             text = "Unknown"
-
+ 
         cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-    # Display the final frame
+ 
     cv2.imshow('Real-time Face Recognition', frame)
-
-    # Break the loop if 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-
-# Clean up and close all windows
+ 
 cap.release()
 cv2.destroyAllWindows()
+ 

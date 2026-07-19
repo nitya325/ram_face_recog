@@ -1,7 +1,13 @@
 venv/
-dataset/
-trainer
-label_map
-train_modelkaggle
 __pycache__/
 *.pyc
+
+# Raw training images are large and often contain personal photos of real
+# people — do not commit them.
+dataset/
+
+# NOTE: trainer.yml and label_map.json are intentionally NOT ignored.
+# The deployment platform (Render, etc.) never has access to dataset/, so
+# it can't regenerate these by running train_model.py at build time — the
+# already-trained model files must be committed so app.py has something
+# to load at startup.
